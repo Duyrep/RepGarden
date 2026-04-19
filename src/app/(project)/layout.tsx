@@ -1,4 +1,4 @@
-import BotNavBar from "./BotNavBar";
+import BotNavBar from "@/components/layout/BotNavBar";
 
 export default function MainLayout({
   children,
@@ -7,7 +7,7 @@ export default function MainLayout({
 }) {
   return (
     <>
-      <main className="h-full">{children}</main>
+      <main className="pb-(--bottom-navigation-height)">{children}</main>
       <BotNavBar />
     </>
   );

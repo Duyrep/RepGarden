@@ -115,7 +115,7 @@ export function DialogFooter({
   className,
 }: {
   children?: React.ReactNode;
-  className: string;
+  className?: string;
 }) {
   return (
     <div className="mt-2 flex flex-col gap-2">

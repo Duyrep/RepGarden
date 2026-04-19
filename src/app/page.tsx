@@ -4,9 +4,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div>
-      <Link href={"/add"}>
-        <Plus />
-      </Link>
+      <Link href={"/my-projects"}>Dự án của tôi</Link>
     </div>
   );
 }

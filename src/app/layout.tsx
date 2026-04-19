@@ -17,9 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="h-dvh flex flex-col">
-        <Providers>
-          <MainLayout>{children}</MainLayout>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

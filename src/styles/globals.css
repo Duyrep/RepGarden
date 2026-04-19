@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -15,12 +10,14 @@
   --color-primary-a40: var(--primary-a40);
   --color-primary-a50: var(--primary-a50);
   --color-on-primary: var(--on-primary);
+  --color-primary-to-mint: var(--primary-to-mint);
   --color-surface-a0: var(--surface-a0);
   --color-surface-a10: var(--surface-a10);
   --color-surface-a20: var(--surface-a20);
   --color-surface-a30: var(--surface-a30);
   --color-surface-a40: var(--surface-a40);
   --color-surface-a50: var(--surface-a50);
+  --color-on-surface: var(--on-surface);
   --color-surface-tonal: var(--surface-tonal);
   --color-surface-tonal: var(--surface-tonal);
   --color-surface-tonal: var(--surface-tonal);
@@ -143,6 +140,7 @@
   --primary-a40: #2f5e3f;
   --primary-a50: #274b33;
   --on-primary: #ffffff;
+  --primary-to-mint: #6bcb77;
 
   /** Theme surface colors */
   --surface-a0: #ffffff;
@@ -151,6 +149,7 @@
   --surface-a30: #d3d3d3;
   --surface-a40: #c5c5c5;
   --surface-a50: #b6b6b6;
+  --on-surface: #000000;
 
   /** Theme tonal surface colors */
   --surface-tonal-a0: #eff9e9;
@@ -179,6 +178,9 @@
   --info-a0: #1e56a3;
   --info-a10: #347ada;
   --info-a20: #74a4e6;
+
+  /* Bottom navigation */
+  --bottom-navigation-height: 64px;
 
   /* react-ripple-click */
   --Ripple-custom-opacity: 0.2;

@@ -10,7 +10,7 @@ export default function Add() {
 
   return (
     <div className="flex items-center justify-between flex-col h-full">
-      <b className="w-full flex justify-center bg-primary p-4 text-xl text-on-primary bg-linear-[135deg] from-[#4caf72] to-[#6bcb77]">
+      <b className="w-full flex justify-center bg-primary p-4 text-xl text-on-primary bg-linear-[135deg] from-primary to-primary-to-mint">
         Thêm cây
       </b>
       <div className="p-2 flex flex-col items-center gap-2 h-[calc(100%)] max-w-xl w-full">
@@ -27,18 +27,18 @@ export default function Add() {
             <input ref={inputImageFile} type="file" className="hidden" />
           </button>
           <Input
-            icon={{ src: "/grow-plant.png", width: 18, height: 18 }}
+            icon={{ src: "/icons/grow-plant.png", width: 18, height: 18 }}
             label="Tên cây"
             placeholder="Bắc buộc"
           />
           <Input
-            icon={{ src: "/open-book.png", width: 18, height: 18 }}
+            icon={{ src: "/icons/open-book.png", width: 18, height: 18 }}
             label="Tên khoa học"
           />
           <div>
             <div className="flex items-center select-none">
               <Image
-                src="/pencil.png"
+                src="/icons/pencil.png"
                 width={18}
                 height={18}
                 alt="icon"

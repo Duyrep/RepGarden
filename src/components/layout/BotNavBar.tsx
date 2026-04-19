@@ -30,12 +30,7 @@ export default function BotNavBar() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-1 left-1/2 -translate-x-1/2 flex justify-center items-center gap-2 z-50">
-      <Link href={Routers.ADD}>
-        <Button className="p-2 w-min h-min rounded-full duration-200 hover:p-3">
-          <Plus />
-        </Button>
-      </Link>
+    <div className="fixed bottom-1 left-1/2 -translate-x-1/2 flex justify-center items-center gap-2 z-40">
       <nav className="flex rounded-lg text-on-primary m-1 bg-surface-a0 shadow w-min">
         {Items.map(({ Icon, label, href }) => (
           <Link
