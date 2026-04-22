@@ -1,11 +1,11 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { ChevronDown, Star, Trash } from "lucide-react";
+import { ChevronDown, Plus, Star, Trash } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { twJoin, twMerge } from "tailwind-merge";
+import { twMerge } from "tailwind-merge";
 import {
   Button,
   Dialog,
@@ -14,15 +14,27 @@ import {
   DialogTitle,
   DialogTrigger,
   Input,
+  Loading,
 } from "@/components/ui";
+import { projectDB } from "@/db/project";
 import { type Tree, treeDB } from "@/db/tree";
 
 export default function ProjectTrees() {
-  const projectId = Number(useParams().projectId as string);
-  const trees = useLiveQuery(
-    () => treeDB.trees.where("projectId").equals(projectId).toArray(),
-    [projectId],
-  );
+  const projectId = Number(useParams().projectId);
+
+  const trees = useLiveQuery(async () => {
+    if (Number.isNaN(projectId)) return [];
+    return await treeDB.trees.where("projectId").equals(projectId).toArray();
+  }, [projectId]);
+
+  const project = useLiveQuery(async () => {
+    if (Number.isNaN(projectId)) return null;
+    const p = await projectDB.projects.get(projectId);
+    return p ?? null;
+  }, [projectId]);
+
+  if (project === undefined || trees === undefined) return <Loading />;
+  if (!project) return <ProjectNotFound />;
 
   return (
     <div className="flex flex-col">
@@ -67,7 +79,10 @@ function AddTree({ projectId }: { projectId: number }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Thêm cây</Button>
+        <Button>
+          <Plus />
+          &nbsp;Thêm cây
+        </Button>
       </DialogTrigger>
       <DialogContent aria-describedby={undefined}>
         <DialogTitle>Thêm cây</DialogTitle>
@@ -168,5 +183,16 @@ function TreeItem({
         </div>
       </div>
     </div>
+  );
+}
+
+function ProjectNotFound() {
+  return (
+    <b className="h-[calc(100dvh-var(--bottom-navigation-height))] flex flex-col text-xl justify-center items-center">
+      Không tìm thấy dự án
+      <Link href={"/my-projects"}>
+        <Button>Quay lại</Button>
+      </Link>
+    </b>
   );
 }

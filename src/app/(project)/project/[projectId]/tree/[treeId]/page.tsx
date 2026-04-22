@@ -1,5 +1,6 @@
 "use client";
 
+import { useLiveQuery } from "dexie-react-hooks";
 import {
   ArrowLeft,
   BookOpen,
@@ -10,58 +11,36 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui";
+import { useState } from "react";
+import { Header } from "@/components/layout";
+import { Button, Loading } from "@/components/ui";
 import { MetricCard } from "@/components/ui/MetricCard";
-import { type Project, projectDB } from "@/db/project";
-import { type Tree, treeDB } from "@/db/tree";
+import { metricDB } from "@/db/metric";
+import { projectDB } from "@/db/project";
+import { treeDB } from "@/db/tree";
 
 export default function ProjectPage() {
-  const [project, setProject] = useState<Project | undefined>(undefined);
-  const [tree, setTree] = useState<Tree | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-  const [found, setFound] = useState(false);
   const projectId = Number(useParams().projectId as string);
   const treeId = Number(useParams().treeId as string);
 
-  useEffect(() => {
-    const run = async () => {
-      if (Number.isNaN(projectId) || Number.isNaN(treeId)) {
-        setIsLoading(false);
-        setFound(false);
-        return;
-      }
+  const [isLoading, setIsLoading] = useState(true);
 
-      const project = await projectDB.projects.get(projectId);
-      const tree = await treeDB.trees.get(treeId);
-
-      setProject(project);
-      setTree(tree);
-
-      if (project) {
-        setFound(true);
-      }
-
-      if (tree) {
-        setFound(true);
-      }
-      setIsLoading(false);
-    };
-
-    run();
-  }, [projectId, treeId]);
+  const tree = useLiveQuery(async () => await treeDB.trees.get(treeId));
+  const metrics = useLiveQuery(
+    async () => await metricDB.metrics.where("treeId").equals(treeId).toArray(),
+  );
+  const project = useLiveQuery(async () => {
+    const data = await projectDB.projects.get(projectId);
+    setIsLoading(false);
+    return data;
+  }, [projectId]);
 
   if (isLoading) return <Loading />;
-  if (!found || !project || !tree) return <TreeNotFound />;
+  if (!project || !tree) return <TreeNotFound />;
 
   return (
     <>
-      <div className="fixed z-10 w-full flex gap-4 items-center text-lg p-2 bg-surface-a0">
-        <Link href={"/my-projects"}>
-          <ArrowLeft />
-        </Link>
-        <b>{project.name}</b>
-      </div>
+      <Header title={project.name} href={`/project/${projectId}`} />
       <div className="p-2 flex flex-col gap-4 pt-14">
         <div className="flex flex-col gap-4 bg-linear-[135deg] from-primary to-primary-to-mint rounded-2xl p-4 text-xl font-bold text-on-primary">
           {tree.name}
@@ -80,44 +59,9 @@ export default function ProjectPage() {
             Xem tất cả chỉ số
           </Link>
           <div className="grid max-lg:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
-            <MetricCard
-              title="Chiều cao"
-              value={"28cm"}
-              valueType="raw"
-              color="blue"
-              icon={<Ruler size={28} />}
-            />
-
-            <MetricCard
-              title="Nhiệt độ"
-              value={28}
-              valueType="temperature"
-              color="red"
-              icon={<Thermometer size={28} />}
-            />
-
-            <MetricCard
-              title="Độ ẩm"
-              value={75}
-              valueType="percentage"
-              color="cyan"
-              icon={<Droplet size={28} />}
-            />
-
-            <MetricCard
-              title="Số ngày đã ghi nhận"
-              value={7}
-              valueType="days"
-              color="green"
-              icon={<BookOpen size={28} />}
-            />
-
-            <MetricCard
-              title="Trạng thái"
-              value="Hoạt động tốt"
-              color="blue"
-              icon={<Info size={28} />}
-            />
+            {metrics?.map((metric) => (
+              <MetricCard key={metric.id} {...metric} />
+            ))}
           </div>
         </div>
 
@@ -137,14 +81,6 @@ export default function ProjectPage() {
         </div>
       </div>
     </>
-  );
-}
-
-function Loading() {
-  return (
-    <b className="text-xl flex h-full justify-center items-center">
-      Đang tải...
-    </b>
   );
 }
 

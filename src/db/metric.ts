@@ -1,13 +1,18 @@
 import Dexie, { type Table } from "dexie";
+import type {
+  MetricCardColor,
+  MetricCardIcons,
+  MetricValueType,
+} from "@/components/ui/MetricCard";
 
 export interface Metric {
   id?: number;
-  projectId: number;
+  treeId: number;
   name: string;
-  iconName: string;
-  value: string;
-  valueType: string;
-  color: string;
+  iconName: MetricCardIcons;
+  value: string | number;
+  valueType: MetricValueType;
+  color: MetricCardColor;
   createdAt: string;
 }
 
@@ -19,7 +24,7 @@ export class MetricDB extends Dexie {
 
     this.version(1).stores({
       metrics:
-        "++id, projectId, name, iconName, value, valueType, color, createdAt",
+        "++id, treeId, name, iconName, value, valueType, color, createdAt",
     });
   }
 }

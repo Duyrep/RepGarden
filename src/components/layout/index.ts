@@ -1,3 +1,4 @@
-import MainLayout from "./MainLayout";
+import FullPageOverlay from "./FullPageOverlay";
+import Header from "./Header";
 
-export { MainLayout };
+export { Header, FullPageOverlay };

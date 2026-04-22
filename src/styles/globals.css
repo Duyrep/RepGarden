@@ -179,8 +179,8 @@
   --info-a10: #347ada;
   --info-a20: #74a4e6;
 
-  /* Bottom navigation */
   --bottom-navigation-height: 64px;
+  --header-height: 3rem;
 
   /* react-ripple-click */
   --Ripple-custom-opacity: 0.2;
