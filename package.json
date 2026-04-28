@@ -12,6 +12,7 @@
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
     "dexie": "^4.4.2",
+    "dexie-export-import": "^4.4.0",
     "dexie-react-hooks": "^4.4.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",

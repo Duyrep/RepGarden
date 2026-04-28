@@ -5,7 +5,8 @@ import { cn } from "@/utils";
 export type HeaderVariant = "primary" | "secondary";
 
 export const HeaderColorVariant = {
-  primary: "bg-primary",
+  primary:
+    "bg-primary text-center text-on-primary w-full pr-10 bg-linear-[135deg] from-primary to-primary-to-mint",
   secondary: "bg-surface-a0",
 };
 
@@ -33,7 +34,7 @@ export default function Header({
           <ArrowLeft />
         </Link>
       )}
-      <b>{title}</b>
+      <b className="w-full">{title}</b>
     </header>
   );
 }

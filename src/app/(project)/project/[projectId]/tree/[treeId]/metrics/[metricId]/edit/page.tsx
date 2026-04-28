@@ -2,6 +2,8 @@
 
 import {
   Activity,
+  AlertCircle,
+  FileEdit,
   Hash,
   HelpCircle,
   Palette,
@@ -11,17 +13,17 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout";
 import {
   Button,
   Dialog,
-  DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
   Input,
+  Loading,
 } from "@/components/ui";
 import {
   MetricCardColor,
@@ -29,41 +31,69 @@ import {
   MetricCardIcons,
   MetricValueType,
 } from "@/components/ui/MetricCard";
-import { type Metric, appDB } from "@/db";
+import { appDB, type Metric } from "@/db";
 import { cn } from "@/utils";
 
-export default function AddMetric() {
+export default function EditMetric() {
+  const metricId = Number(useParams().metricId);
   const treeId = Number(useParams().treeId);
-  const pathname = usePathname();
+  const projectId = Number(useParams().projectId);
   const router = useRouter();
 
-  const defaultMetric: Metric = {
-    treeId,
-    name: "Nhiệt độ",
-    iconName: MetricCardIcons.thermometer,
-    value: "28",
-    valueType: MetricValueType.temperature,
-    color: MetricCardColor.red,
-    createdAt: new Date().toISOString(),
-  };
-
-  const [metric, setMetric] = useState<Metric>(defaultMetric);
+  const [metric, setMetric] = useState<Metric | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isOpen1, setIsOpen1] = useState(false);
   const [isOpen2, setIsOpen2] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Tải dữ liệu chỉ số cần sửa 1 lần duy nhất khi vào trang
+  useEffect(() => {
+    const loadMetric = async () => {
+      if (Number.isNaN(metricId)) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const data = await appDB.metrics.get(metricId);
+        if (data) {
+          setMetric(data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải chỉ số:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMetric();
+  }, [metricId]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!metric.name.trim() || !metric.value.toString().trim() || isSubmitting)
+    if (
+      !metric ||
+      !metric.name.trim() ||
+      !metric.value.toString().trim() ||
+      isSubmitting
+    )
       return;
 
     setIsSubmitting(true);
     try {
-      await appDB.metrics.add(metric);
-      setMetric(defaultMetric);
-      router.push(pathname.split("/").slice(0, -1).join("/") || "/");
+      // Cập nhật vào cơ sở dữ liệu
+      await appDB.metrics.update(metricId, {
+        name: metric.name,
+        value: metric.value,
+        valueType: metric.valueType,
+        iconName: metric.iconName,
+        color: metric.color,
+        // Không cập nhật createdAt để giữ nguyên ngày tạo gốc
+      });
+
+      // Quay lại trang danh sách chỉ số (Back)
+      router.back();
     } catch (error) {
-      console.error("Lỗi khi thêm chỉ số:", error);
+      console.error("Lỗi khi cập nhật chỉ số:", error);
       setIsSubmitting(false);
     }
   };
@@ -96,24 +126,63 @@ export default function AddMetric() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <Loading />
+        <p className="text-surface-a40 font-medium animate-pulse">
+          Đang tải dữ liệu chỉ số...
+        </p>
+      </div>
+    );
+  }
+
+  if (!metric) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground animate-fade-in p-4 text-center">
+        <div className="w-24 h-24 bg-danger-a0/10 text-danger-a0 flex items-center justify-center rounded-full mb-6">
+          <AlertCircle className="w-12 h-12" />
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold mb-4">
+          Không tìm thấy chỉ số
+        </h2>
+        <p className="text-surface-a50 mb-8 max-w-md">
+          Chỉ số bạn muốn chỉnh sửa không tồn tại hoặc đã bị xóa.
+        </p>
+        <Button
+          onClick={() => router.back()}
+          className="bg-primary text-on-primary hover:bg-primary-a10 px-8 py-3 rounded-full shadow-sm"
+        >
+          Quay lại
+        </Button>
+      </div>
+    );
+  }
+
   const SelectedIcon = MetricCardIconMap[metric.iconName] || HelpCircle;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col animate-fade-in overflow-x-hidden">
       <Header
-        href="./"
-        title="Thêm chỉ số mới"
+        href={`/project/${projectId}/tree/${treeId}/metrics`}
+        title="Chỉnh sửa chỉ số"
         variant="primary"
         className="sticky top-0 z-10 shadow-sm"
       />
 
       <main className="flex-1 w-full max-w-2xl mx-auto p-4 md:p-8 flex flex-col justify-center pt-[calc(var(--header-height)+1.5rem)]">
         <div className="bg-surface-a0 p-6 md:p-8 rounded-2xl shadow-sm border border-surface-a10 animate-slide-up">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-primary flex items-center gap-2">
-              <Activity className="w-6 h-6" />
-              Tạo chỉ số sinh trưởng
-            </h2>
+          <div className="mb-6 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-surface-tonal-a0 flex items-center justify-center text-primary">
+              <FileEdit className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-primary">Chỉnh sửa</h2>
+              <p className="text-surface-a50 text-sm">
+                Cập nhật thông tin cho chỉ số{" "}
+                <strong className="text-foreground">{metric.name}</strong>
+              </p>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -133,7 +202,9 @@ export default function AddMetric() {
                 value={metric.name}
                 className="w-full"
                 onChange={(e) =>
-                  setMetric((prev) => ({ ...prev, name: e.target.value }))
+                  setMetric((prev) =>
+                    prev ? { ...prev, name: e.target.value } : prev,
+                  )
                 }
               />
             </div>
@@ -154,13 +225,15 @@ export default function AddMetric() {
                   value={metric.value}
                   className="w-full flex-1"
                   onChange={(e) =>
-                    setMetric((prev) => ({ ...prev, value: e.target.value }))
+                    setMetric((prev) =>
+                      prev ? { ...prev, value: e.target.value } : prev,
+                    )
                   }
                 />
               </div>
             </div>
 
-            {/* Đơn vị / Loại giá trị (Lưới các nút bấm) */}
+            {/* Đơn vị / Loại giá trị */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <Ruler className="w-4 h-4 text-primary" />
@@ -172,7 +245,9 @@ export default function AddMetric() {
                     key={type}
                     type="button"
                     onClick={() =>
-                      setMetric((prev) => ({ ...prev, valueType: type }))
+                      setMetric((prev) =>
+                        prev ? { ...prev, valueType: type } : prev,
+                      )
                     }
                     className={cn(
                       "px-3 py-2 text-sm rounded-xl border transition-all text-left truncate",
@@ -202,7 +277,7 @@ export default function AddMetric() {
                       className="w-full flex items-center justify-between bg-surface-a0 border-surface-a20 hover:bg-surface-a10 h-12"
                     >
                       <span className="text-surface-a50 font-normal">
-                        Chọn icon
+                        Đổi icon
                       </span>
                       <SelectedIcon
                         className="w-5 h-5 text-on-surface"
@@ -224,7 +299,9 @@ export default function AddMetric() {
                             key={iconName}
                             type="button"
                             onClick={() => {
-                              setMetric((prev) => ({ ...prev, iconName }));
+                              setMetric((prev) =>
+                                prev ? { ...prev, iconName } : prev,
+                              );
                               setIsOpen1(false);
                             }}
                             className={cn(
@@ -256,7 +333,7 @@ export default function AddMetric() {
                       className="w-full flex items-center justify-between bg-surface-a0 border-surface-a20 hover:bg-surface-a10 h-12"
                     >
                       <span className="text-surface-a50 font-normal flex items-center gap-2">
-                        <Palette className="w-4 h-4" /> Bảng màu
+                        <Palette className="w-4 h-4" /> Đổi màu
                       </span>
                       <div
                         className="w-6 h-6 rounded-full shadow-sm border border-black/10"
@@ -276,7 +353,9 @@ export default function AddMetric() {
                             key={color}
                             type="button"
                             onClick={() => {
-                              setMetric((prev) => ({ ...prev, color }));
+                              setMetric((prev) =>
+                                prev ? { ...prev, color } : prev,
+                              );
                               setIsOpen2(false);
                             }}
                             style={{ backgroundColor: color }}
@@ -298,15 +377,14 @@ export default function AddMetric() {
 
             {/* Nút hành động */}
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-surface-a10">
-              <Link href="./" className="w-full sm:w-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full bg-surface-a0 text-foreground border-surface-a20 hover:bg-surface-a10"
-                >
-                  <X className="w-4 h-4 mr-2" /> Hủy
-                </Button>
-              </Link>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                className="w-full sm:w-auto bg-surface-a0 text-foreground border-surface-a20 hover:bg-surface-a10"
+              >
+                <X className="w-4 h-4 mr-2" /> Hủy
+              </Button>
               <Button
                 type="submit"
                 disabled={
@@ -321,7 +399,7 @@ export default function AddMetric() {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    Thêm chỉ số
+                    Lưu thay đổi
                   </>
                 )}
               </Button>

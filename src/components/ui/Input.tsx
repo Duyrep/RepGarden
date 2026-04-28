@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type React from "react";
 import { twMerge } from "tailwind-merge";
 
 export default function Input({
@@ -7,31 +8,25 @@ export default function Input({
   className,
   ...props
 }: React.ComponentProps<"input"> & {
-  icon?: {
-    src: string;
-    width: number;
-    height: number;
-  };
+  icon?: React.ReactNode;
   label?: string;
 }) {
   if (label)
     return (
       <label
         className={twMerge(
-          "select-none flex items-center bg-surface-a0 border border-surface-a50 px-2 rounded-md duration-200 whitespace-nowrap hover:border-primary outline outline-transparent focus-within:outline-primary focus-within:outline-2 focus-within:hover:border-transparent focus-within:border-transparent cursor-text",
+          "select-none flex items-center gap-2 bg-surface-a0 border border-surface-a50 px-2 rounded-md duration-200 whitespace-nowrap hover:border-primary outline outline-transparent focus-within:outline-primary focus-within:outline-2 focus-within:hover:border-transparent focus-within:border-transparent cursor-text",
+          className,
         )}
       >
-        {icon && (
-          <>
-            <Image {...icon} alt="icon" draggable={false} />
-            &nbsp;
-          </>
-        )}
-        <p>{label}:&nbsp;</p>
-        <input
-          className="focus:border-primary w-full outline-none p-1"
-          {...props}
-        />
+        {icon}
+        <div className="flex items-center">
+          <p>{label}:&nbsp;</p>
+          <input
+            className="focus:border-primary w-full outline-none p-1"
+            {...props}
+          />
+        </div>
       </label>
     );
   else
